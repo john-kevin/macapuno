@@ -20,6 +20,7 @@ class MacapunoApp {
         this.setupEventListeners();
         this.updateCurrentDate();
         this.setDefaultDate();
+        this.updateVersionDisplay();
         this.loadAndDisplayData();
         
         // Check localStorage support and show warning if needed
@@ -99,6 +100,16 @@ class MacapunoApp {
                 }
             }
         });
+    }
+
+    /**
+     * Update version display
+     */
+    updateVersionDisplay() {
+        const versionElement = document.getElementById('appVersion');
+        if (versionElement) {
+            versionElement.textContent = `v${this.calculator.getVersion()}`;
+        }
     }
 
     /**

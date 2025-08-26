@@ -8,6 +8,7 @@ class Calculator {
         this.ratePerWrapper = 0.20; // 500 wrappers = 100 pesos
         this.currency = 'PHP';
         this.currencySymbol = '₱';
+        this.version = '1.2.1'; // App version - Fixed work streak calculation bug
     }
 
     /**
@@ -82,35 +83,27 @@ class Calculator {
             return 0;
         }
 
-        let streak = 0;
-        let expectedDate = new Date();
-        expectedDate.setHours(0, 0, 0, 0);
-
-        // Check if there's an entry for today first
-        const today = expectedDate.toISOString().split('T')[0];
-        const hasToday = sortedEntries.some(entry => entry.date === today);
+        // Start counting from the most recent entry
+        let streak = 1; // Count the most recent entry
+        let currentDate = new Date(sortedEntries[0].date);
         
-        // If no entry for today, start checking from yesterday
-        if (!hasToday) {
-            expectedDate.setDate(expectedDate.getDate() - 1);
-        }
-
-        // Go through entries and count consecutive days
-        for (const entry of sortedEntries) {
+        // Go through remaining entries and count consecutive days
+        for (let i = 1; i < sortedEntries.length; i++) {
+            const entry = sortedEntries[i];
             const entryDate = new Date(entry.date);
-            entryDate.setHours(0, 0, 0, 0);
             
-            const expectedDateStr = expectedDate.toISOString().split('T')[0];
+            // Calculate expected previous day
+            const expectedPreviousDay = new Date(currentDate);
+            expectedPreviousDay.setDate(expectedPreviousDay.getDate() - 1);
             
-            if (entry.date === expectedDateStr) {
+            // Check if this entry is for the expected previous day
+            if (entry.date === expectedPreviousDay.toISOString().split('T')[0]) {
                 streak++;
-                // Move to previous day for next iteration
-                expectedDate.setDate(expectedDate.getDate() - 1);
-            } else if (entry.date < expectedDateStr) {
-                // Entry is older than expected, streak is broken
+                currentDate = entryDate;
+            } else {
+                // Gap found, streak is broken
                 break;
             }
-            // If entry.date > expectedDateStr, continue looking for the expected date
         }
 
         return streak;
@@ -231,6 +224,14 @@ class Calculator {
         }
 
         return { streak, debug: debug.join('\n') };
+    }
+
+    /**
+     * Get app version
+     * @returns {string} Current app version
+     */
+    getVersion() {
+        return this.version;
     }
 
     /**
