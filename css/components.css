@@ -363,6 +363,36 @@
     transform: translateX(0);
 }
 
+/* Button Fireworks Animation */
+.button-fireworks-container {
+    position: fixed;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.firework-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+@keyframes firework-burst {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+    }
+    15% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(calc(-50% + var(--end-x)), calc(-50% + var(--end-y))) scale(0.3);
+        opacity: 0;
+    }
+}
+
 /* Celebration Animation */
 .celebration-overlay {
     position: fixed;

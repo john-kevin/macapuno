@@ -9,67 +9,93 @@ class CelebrationManager {
     }
 
     /**
-     * Trigger celebration animation for new entries
+     * Trigger celebration animation for new entries - localized to save button
      * @param {number} wrapperCount - Number of wrappers for contextual messages
      */
     triggerCelebration(wrapperCount) {
-        // Create celebration overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'celebration-overlay';
-        document.body.appendChild(overlay);
-
-        // Generate confetti
-        this.createConfetti(overlay);
-        
-        // Generate balloons
-        this.createBalloons(overlay);
+        // Create localized celebration around save button
+        this.createButtonFireworks();
         
         // Show celebration message
         this.showCelebrationMessage(wrapperCount);
+    }
+
+    /**
+     * Create fireworks effect around the save button
+     */
+    createButtonFireworks() {
+        const saveBtn = document.getElementById('saveBtn');
+        if (!saveBtn) return;
+
+        // Get button position and dimensions
+        const rect = saveBtn.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        // Create container for button fireworks
+        const fireworksContainer = document.createElement('div');
+        fireworksContainer.className = 'button-fireworks-container';
+        fireworksContainer.style.cssText = `
+            position: fixed;
+            left: ${centerX}px;
+            top: ${centerY}px;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+            z-index: 1000;
+        `;
+        document.body.appendChild(fireworksContainer);
+
+        // Create multiple bursts of confetti
+        this.createFireworksBurst(fireworksContainer, 0); // Immediate burst
+        setTimeout(() => this.createFireworksBurst(fireworksContainer, 100), 150); // Second burst
+        setTimeout(() => this.createFireworksBurst(fireworksContainer, 200), 300); // Third burst
 
         // Clean up after animation
         setTimeout(() => {
-            if (overlay.parentNode) {
-                document.body.removeChild(overlay);
+            if (fireworksContainer.parentNode) {
+                document.body.removeChild(fireworksContainer);
             }
-        }, 3500);
+        }, 2000);
     }
 
     /**
-     * Create confetti particles
-     * @param {HTMLElement} container - Container for confetti
+     * Create a single fireworks burst
+     * @param {HTMLElement} container - Container for fireworks
+     * @param {number} delay - Animation delay offset
      */
-    createConfetti(container) {
-        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff'];
-        const confettiCount = 50;
+    createFireworksBurst(container, delay = 0) {
+        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3'];
+        const particleCount = 12; // Particles per burst
 
-        for (let i = 0; i < confettiCount; i++) {
-            const confetti = document.createElement('div');
-            confetti.className = 'confetti';
-            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.left = Math.random() * 100 + 'vw';
-            confetti.style.animationDelay = Math.random() * 2 + 's';
-            confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
-            container.appendChild(confetti);
-        }
-    }
-
-    /**
-     * Create floating balloons
-     * @param {HTMLElement} container - Container for balloons
-     */
-    createBalloons(container) {
-        const balloonEmojis = ['🎈', '🎉', '🎊', '✨', '🌟', '💫', '🏆'];
-        const balloonCount = 12;
-
-        for (let i = 0; i < balloonCount; i++) {
-            const balloon = document.createElement('div');
-            balloon.className = 'balloon';
-            balloon.textContent = balloonEmojis[Math.floor(Math.random() * balloonEmojis.length)];
-            balloon.style.left = Math.random() * 90 + 'vw';
-            balloon.style.animationDelay = Math.random() * 1.5 + 's';
-            balloon.style.animationDuration = (Math.random() * 1 + 2.5) + 's';
-            container.appendChild(balloon);
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'firework-particle';
+            
+            // Calculate random direction (360 degrees)
+            const angle = (360 / particleCount) * i + (Math.random() * 30 - 15); // Spread particles evenly with some randomness
+            const distance = 60 + Math.random() * 40; // Random distance 60-100px from button
+            const duration = 1000 + Math.random() * 500; // Random duration 1-1.5s
+            
+            // Convert angle to radians and calculate end position
+            const radian = (angle * Math.PI) / 180;
+            const endX = Math.cos(radian) * distance;
+            const endY = Math.sin(radian) * distance;
+            
+            particle.style.cssText = `
+                position: absolute;
+                width: 6px;
+                height: 6px;
+                background-color: ${colors[Math.floor(Math.random() * colors.length)]};
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
+                opacity: 1;
+                animation: firework-burst ${duration}ms ease-out ${delay}ms forwards;
+                --end-x: ${endX}px;
+                --end-y: ${endY}px;
+            `;
+            
+            container.appendChild(particle);
         }
     }
 
