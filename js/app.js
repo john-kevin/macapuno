@@ -147,6 +147,51 @@ class MacapunoApp {
     }
 
     /**
+     * Update selected date display with formatted text and styling
+     * @param {string} dateString - Date string in YYYY-MM-DD format
+     */
+    updateSelectedDateDisplay(dateString) {
+        const selectedDateElement = document.getElementById('selectedDateDisplay');
+        if (!selectedDateElement || !dateString) return;
+
+        const selectedDate = new Date(dateString);
+        const today = new Date();
+        
+        // Reset time parts for accurate comparison
+        selectedDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        // Format the date nicely
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        };
+        
+        let displayText = selectedDate.toLocaleDateString('en-US', options);
+        
+        // Add contextual prefix and styling
+        selectedDateElement.className = 'selected-date-display';
+        
+        if (selectedDate.getTime() === today.getTime()) {
+            displayText = `Today, ${selectedDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            })}`;
+            selectedDateElement.classList.add('today');
+        } else if (selectedDate > today) {
+            displayText = `Future Date: ${displayText}`;
+            selectedDateElement.classList.add('future');
+        } else {
+            selectedDateElement.classList.add('past');
+        }
+        
+        selectedDateElement.textContent = displayText;
+    }
+
+    /**
      * Set today's date as default in date input
      */
     setDefaultDate() {
@@ -155,6 +200,7 @@ class MacapunoApp {
         const dateString = today.toISOString().split('T')[0];
         
         entryDateInput.value = dateString;
+        this.updateSelectedDateDisplay(dateString);
         this.handleDateChange();
     }
 
@@ -167,19 +213,29 @@ class MacapunoApp {
         
         if (!selectedDate) return;
 
+        // Update the selected date display
+        this.updateSelectedDateDisplay(selectedDate);
+
         // Check if entry exists for selected date
         const existingEntry = this.storage.getEntryByDate(selectedDate);
+        const saveBtn = document.getElementById('saveBtn');
         
         if (existingEntry) {
             // Load existing entry
             document.getElementById('wrapperCount').value = existingEntry.wrapperCount;
             this.updateCurrentEarnings(existingEntry.wrapperCount);
-            document.getElementById('saveBtn').textContent = 'Update Entry';
+            
+            // Update button for update mode
+            saveBtn.textContent = 'Update Entry';
+            saveBtn.classList.add('update-mode');
         } else {
             // Clear form for new entry
             document.getElementById('wrapperCount').value = '';
             this.updateCurrentEarnings(0);
-            document.getElementById('saveBtn').textContent = 'Save Entry';
+            
+            // Update button for save mode
+            saveBtn.textContent = 'Save Entry';
+            saveBtn.classList.remove('update-mode');
         }
     }
 
@@ -237,6 +293,12 @@ class MacapunoApp {
             wrapperCountInput.value = '';
             this.updateCurrentEarnings(0);
             
+            // Since we just saved an entry for the selected date, 
+            // the button should now be in "Update Entry" mode
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.textContent = 'Update Entry';
+            saveBtn.classList.add('update-mode');
+            
             // Scroll to entries section to show the saved entry
             this.scrollToEntries();
             
@@ -253,6 +315,27 @@ class MacapunoApp {
         this.updateSummaryData();
         this.updateMonthNavigation();
         this.displayHistoryEntries();
+    }
+
+    /**
+     * Get total number of months that have entries
+     * @param {Array} entries - Array of entry objects
+     * @returns {number} Number of unique months with entries
+     */
+    getTotalMonthsCount(entries) {
+        if (!entries || entries.length === 0) {
+            return 0;
+        }
+
+        const monthsSet = new Set();
+        
+        entries.forEach(entry => {
+            const date = new Date(entry.date);
+            const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+            monthsSet.add(monthKey);
+        });
+        
+        return monthsSet.size;
     }
 
     /**
@@ -402,9 +485,20 @@ class MacapunoApp {
     updateSummaryData() {
         const entries = this.storage.getAllEntries();
         
-        // Total earnings (all time)
+        // Total earnings (all time) with months count
         const totalEarnings = this.calculator.calculateTotalEarnings(entries);
+        const monthsCount = this.getTotalMonthsCount(entries);
+        
         document.getElementById('totalEarnings').textContent = this.calculator.formatEarnings(totalEarnings);
+        
+        // Update total earnings label with months info
+        const totalLabel = document.getElementById('totalEarningsLabel');
+        if (monthsCount > 0) {
+            const monthText = monthsCount === 1 ? 'month' : 'months';
+            totalLabel.textContent = `Total Earnings (${monthsCount} ${monthText}):`;
+        } else {
+            totalLabel.textContent = 'Total Earnings:';
+        }
 
         // Use the currently viewed month as reference for week/month calculations
         const referenceDate = new Date(this.currentViewMonth);

@@ -137,6 +137,21 @@ button {
     transform: translateY(0);
 }
 
+/* Update Entry Button Styling */
+.save-btn.update-mode {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+}
+
+.save-btn.update-mode:hover {
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+    transform: translateY(-2px);
+}
+
+.save-btn.update-mode:active {
+    transform: translateY(0);
+}
+
 .cancel-btn {
     background-color: #6c757d;
     color: white;
