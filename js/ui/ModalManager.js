@@ -39,7 +39,8 @@ class ModalManager {
         
         // Show modal with proper animation
         const modal = document.getElementById('editModal');
-        modal.style.display = 'flex';
+        modal.style.display = 'flex'; // Use flex for centering
+        modal.classList.remove('closing'); // Remove any previous closing state
         
         // Force reflow then add show class for animation
         modal.offsetHeight; 
@@ -60,11 +61,15 @@ class ModalManager {
      */
     closeEditModal() {
         const modal = document.getElementById('editModal');
+        
+        // Add closing class for reverse animation
         modal.classList.remove('show');
+        modal.classList.add('closing');
         
         // Hide modal after animation completes
         setTimeout(() => {
             modal.style.display = 'none';
+            modal.classList.remove('closing');
         }, 300);
         
         this.currentEditingEntry = null;

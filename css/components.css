@@ -65,13 +65,16 @@
     backdrop-filter: blur(2px);
     opacity: 0;
     transition: opacity 0.3s ease;
+    align-items: center;
+    justify-content: center;
 }
 
 .modal.show {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     opacity: 1;
+}
+
+.modal.closing {
+    opacity: 0;
 }
 
 .modal-content {
@@ -88,6 +91,10 @@
 
 .modal.show .modal-content {
     transform: scale(1) translateY(0);
+}
+
+.modal.closing .modal-content {
+    transform: scale(0.7) translateY(-50px);
 }
 
 .modal-header {
