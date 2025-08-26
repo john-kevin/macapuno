@@ -237,6 +237,9 @@ class MacapunoApp {
             wrapperCountInput.value = '';
             this.updateCurrentEarnings(0);
             
+            // Scroll to entries section to show the saved entry
+            this.scrollToEntries();
+            
             // Keep the same date for convenience (user might want to add more entries for same date)
         } else {
             this.showNotification('Failed to save entry. Please try again.', 'error');
@@ -612,6 +615,9 @@ class MacapunoApp {
             this.closeEditModal();
             this.loadAndDisplayData();
             
+            // Scroll to entries section to show the updated entry
+            this.scrollToEntries();
+            
             // Update main form if it's showing the same date
             const currentDate = document.getElementById('entryDate').value;
             if (currentDate === this.currentEditingEntry.date) {
@@ -644,6 +650,22 @@ class MacapunoApp {
             } else {
                 this.showNotification('Failed to delete entry. Please try again.', 'error');
             }
+        }
+    }
+
+    /**
+     * Scroll to entries section smoothly
+     */
+    scrollToEntries() {
+        const entriesSection = document.querySelector('.history-section');
+        if (entriesSection) {
+            // Add a small delay to allow DOM updates to complete
+            setTimeout(() => {
+                entriesSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }, 300);
         }
     }
 
