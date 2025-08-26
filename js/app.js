@@ -320,6 +320,11 @@ class MacapunoApp {
         this.updateSummaryData();
         this.updateMonthNavigation();
         this.displayHistoryEntries();
+        
+        // Force a small delay to ensure DOM updates are complete
+        setTimeout(() => {
+            this.attachHistoryEventListeners();
+        }, 100);
     }
 
     /**
@@ -576,6 +581,9 @@ class MacapunoApp {
             return;
         }
 
+        // Clear and rebuild the list to ensure fresh data
+        historyList.innerHTML = '';
+        
         // Add transition effect
         historyList.classList.add('month-transition');
         
@@ -641,31 +649,49 @@ class MacapunoApp {
     }
 
     /**
-     * Open edit modal for a specific entry
+     * Open edit modal with entry data (fixed for new simplified modal)
+     * @param {string} date - Date of entry to edit
      */
     openEditModal(date) {
         const entry = this.storage.getEntryByDate(date);
         if (!entry) {
-            this.showNotification('Entry not found', 'error');
+            this.showNotification('Entry not found.', 'error');
             return;
         }
 
         this.currentEditingEntry = entry;
         
-        // Populate modal fields
-        document.getElementById('editDate').value = entry.date;
-        document.getElementById('editWrapperCount').value = entry.wrapperCount;
-        this.updateEditEarnings(entry.wrapperCount);
-
-        // Show modal
-        const modal = document.getElementById('editModal');
-        modal.classList.add('show');
-        modal.style.display = 'flex';
+        // Format and display the date (read-only)
+        const entryDate = new Date(entry.date);
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        };
+        const formattedDate = entryDate.toLocaleDateString('en-US', options);
+        document.getElementById('editDateDisplay').textContent = formattedDate;
         
-        // Focus on wrapper count input
+        // Populate the editable fields
+        document.getElementById('editWrapperCount').value = entry.wrapperCount;
+        document.getElementById('editEarnings').textContent = this.calculator.formatEarnings(entry.earnings);
+        
+        // Show modal with proper animation
+        const modal = document.getElementById('editModal');
+        modal.style.display = 'flex'; // Use flex for centering
+        
+        // Force reflow then add show class for animation
+        modal.offsetHeight; 
+        modal.classList.add('show');
+        
+        // Focus on wrapper count input for immediate editing
         setTimeout(() => {
-            document.getElementById('editWrapperCount').focus();
-        }, 100);
+            const wrapperInput = document.getElementById('editWrapperCount');
+            if (wrapperInput) {
+                wrapperInput.focus();
+                wrapperInput.select();
+            }
+        }, 150); // Slight delay to let animation start
     }
 
     /**
@@ -674,7 +700,12 @@ class MacapunoApp {
     closeEditModal() {
         const modal = document.getElementById('editModal');
         modal.classList.remove('show');
-        modal.style.display = 'none';
+        
+        // Hide modal after animation completes
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+        
         this.currentEditingEntry = null;
     }
 
@@ -712,16 +743,20 @@ class MacapunoApp {
         if (this.storage.updateEntry(this.currentEditingEntry.date, updatedData)) {
             this.showNotification('Entry updated successfully!', 'success');
             this.closeEditModal();
+            
+            // Refresh all data displays
             this.loadAndDisplayData();
+            
+            // Update the main form if it's showing the same date
+            const currentDate = document.getElementById('entryDate').value;
+            if (currentDate === this.currentEditingEntry.date) {
+                // Refresh the main form to show updated data
+                this.handleDateChange();
+            }
             
             // Scroll to entries section to show the updated entry
             this.scrollToEntries();
             
-            // Update main form if it's showing the same date
-            const currentDate = document.getElementById('entryDate').value;
-            if (currentDate === this.currentEditingEntry.date) {
-                this.handleDateChange();
-            }
         } else {
             this.showNotification('Failed to update entry. Please try again.', 'error');
         }
