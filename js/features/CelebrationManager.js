@@ -16,6 +16,9 @@ class CelebrationManager {
         // Create localized celebration around save button
         this.createButtonFireworks();
         
+        // Create synchronized flames in the entries section
+        this.createEntriesFlames();
+        
         // Show celebration message
         this.showCelebrationMessage(wrapperCount);
     }
@@ -96,6 +99,99 @@ class CelebrationManager {
             `;
             
             container.appendChild(particle);
+        }
+    }
+
+    /**
+     * Create flame effects in the entries section
+     */
+    createEntriesFlames() {
+        const entriesSection = document.querySelector('.history-section');
+        if (!entriesSection) return;
+
+        // Get entries section position
+        const rect = entriesSection.getBoundingClientRect();
+        
+        // Create flame containers at strategic positions around entries section
+        const flamePositions = [
+            { x: rect.left + rect.width * 0.2, y: rect.top + 20 }, // Top left area
+            { x: rect.left + rect.width * 0.8, y: rect.top + 20 }, // Top right area  
+            { x: rect.left + rect.width * 0.1, y: rect.top + rect.height * 0.4 }, // Mid left
+            { x: rect.left + rect.width * 0.9, y: rect.top + rect.height * 0.4 }, // Mid right
+            { x: rect.left + rect.width * 0.3, y: rect.top + rect.height - 30 }, // Bottom left
+            { x: rect.left + rect.width * 0.7, y: rect.top + rect.height - 30 }, // Bottom right
+        ];
+
+        flamePositions.forEach((pos, index) => {
+            // Stagger flame creation slightly for more organic effect
+            setTimeout(() => {
+                this.createFlameAtPosition(pos.x, pos.y);
+            }, index * 100); // 100ms stagger between flames
+        });
+    }
+
+    /**
+     * Create a flame effect at specific position
+     * @param {number} x - X coordinate
+     * @param {number} y - Y coordinate  
+     */
+    createFlameAtPosition(x, y) {
+        const flameContainer = document.createElement('div');
+        flameContainer.className = 'flame-container';
+        flameContainer.style.cssText = `
+            position: fixed;
+            left: ${x}px;
+            top: ${y}px;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+            z-index: 999;
+        `;
+        document.body.appendChild(flameContainer);
+
+        // Create multiple flame particles for each position
+        this.createFlameParticles(flameContainer);
+
+        // Clean up after animation
+        setTimeout(() => {
+            if (flameContainer.parentNode) {
+                document.body.removeChild(flameContainer);
+            }
+        }, 2500);
+    }
+
+    /**
+     * Create flame particles at a position
+     * @param {HTMLElement} container - Container for flame particles
+     */
+    createFlameParticles(container) {
+        const flameColors = ['#ff6b35', '#f7931e', '#ffd700', '#ff4757', '#ff3838'];
+        const particleCount = 8; // Flames per position
+
+        for (let i = 0; i < particleCount; i++) {
+            const flame = document.createElement('div');
+            flame.className = 'flame-particle';
+            
+            // Flame movement - upward with slight horizontal drift
+            const driftX = (Math.random() - 0.5) * 40; // -20 to +20px horizontal drift
+            const riseY = -60 - Math.random() * 40; // -60 to -100px upward
+            const duration = 1500 + Math.random() * 1000; // 1.5-2.5s duration
+            const delay = Math.random() * 500; // 0-500ms stagger
+            
+            flame.style.cssText = `
+                position: absolute;
+                width: 8px;
+                height: 12px;
+                background: ${flameColors[Math.floor(Math.random() * flameColors.length)]};
+                border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+                transform: translate(-50%, -50%);
+                opacity: 0.9;
+                animation: flame-rise ${duration}ms ease-out ${delay}ms forwards;
+                --drift-x: ${driftX}px;
+                --rise-y: ${riseY}px;
+            `;
+            
+            container.appendChild(flame);
         }
     }
 

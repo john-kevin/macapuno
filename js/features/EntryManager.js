@@ -26,10 +26,10 @@ class EntryManager {
             // Reset form after save
             this.app.formManager.resetAfterSave();
             
-            // Scroll to entries section to show the saved entry
+            // Parallel animation: Start scroll during celebration (not after)
             setTimeout(() => {
                 this.app.displayManager.scrollToEntries();
-            }, 1500); // Delay scroll to let celebration play
+            }, 800); // Start scroll mid-celebration for smooth parallel effect
             
         } else {
             this.app.displayManager.showNotification('Failed to save entry. Please try again.', 'error');

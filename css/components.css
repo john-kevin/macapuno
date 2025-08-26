@@ -393,6 +393,34 @@
     }
 }
 
+/* Entries Flames Animation */
+.flame-container {
+    position: fixed;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.flame-particle {
+    position: absolute;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    pointer-events: none;
+}
+
+@keyframes flame-rise {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0.9;
+    }
+    20% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(calc(-50% + var(--drift-x)), calc(-50% + var(--rise-y))) scale(0.2);
+        opacity: 0;
+    }
+}
+
 /* Celebration Animation */
 .celebration-overlay {
     position: fixed;
