@@ -114,8 +114,24 @@
         </div>
     </div>
 
+    <!-- Core modules (loaded first) -->
     <script src="js/calculator.js"></script>
     <script src="js/storage.js"></script>
-    <script src="js/app.js"></script>
+    
+    <!-- UI modules -->
+    <script src="js/ui/FormManager.js"></script>
+    <script src="js/ui/ModalManager.js"></script>
+    <script src="js/ui/DisplayManager.js"></script>
+    
+    <!-- Feature modules -->
+    <script src="js/features/EntryManager.js"></script>
+    <script src="js/features/NavigationManager.js"></script>
+    <script src="js/features/CelebrationManager.js"></script>
+    
+    <!-- Core managers (depends on other modules) -->
+    <script src="js/core/EventManager.js"></script>
+    
+    <!-- Main app orchestrator -->
+    <script src="js/app-new.js"></script>
 </body>
 </html>
