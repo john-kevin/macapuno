@@ -232,6 +232,102 @@
     transform: translateX(0);
 }
 
+/* Celebration Animation */
+.celebration-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: confetti-fall 3s linear forwards;
+}
+
+.balloon {
+    position: absolute;
+    font-size: 2rem;
+    animation: balloon-float 3s ease-out forwards;
+}
+
+@keyframes confetti-fall {
+    0% {
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+@keyframes balloon-float {
+    0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+.celebration-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    z-index: 10000;
+    animation: celebration-bounce 2s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes celebration-bounce {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    10% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+    }
+    20% {
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+    30% {
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+    40% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    85% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+    }
+}
+
 .history-list {
     max-height: 400px;
     overflow-y: auto;
