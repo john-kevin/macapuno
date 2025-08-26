@@ -65,7 +65,7 @@ class Calculator {
 
     /**
      * Calculate work streak (consecutive days with entries)
-     * @param {Array} entries - Array of entry objects sorted by date (newest first)
+     * @param {Array} entries - Array of entry objects
      * @returns {number} Number of consecutive work days
      */
     calculateWorkStreak(entries) {
@@ -74,29 +74,43 @@ class Calculator {
         }
 
         // Sort entries by date (newest first)
-        const sortedEntries = entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const sortedEntries = entries
+            .slice() // Create copy to avoid mutating original
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
         
-        let streak = 0;
-        let currentDate = new Date();
-        currentDate.setHours(0, 0, 0, 0);
+        if (sortedEntries.length === 0) {
+            return 0;
+        }
 
+        let streak = 0;
+        let expectedDate = new Date();
+        expectedDate.setHours(0, 0, 0, 0);
+
+        // Check if there's an entry for today first
+        const today = expectedDate.toISOString().split('T')[0];
+        const hasToday = sortedEntries.some(entry => entry.date === today);
+        
+        // If no entry for today, start checking from yesterday
+        if (!hasToday) {
+            expectedDate.setDate(expectedDate.getDate() - 1);
+        }
+
+        // Go through entries and count consecutive days
         for (const entry of sortedEntries) {
             const entryDate = new Date(entry.date);
             entryDate.setHours(0, 0, 0, 0);
             
-            const daysDiff = Math.floor((currentDate - entryDate) / (1000 * 60 * 60 * 24));
+            const expectedDateStr = expectedDate.toISOString().split('T')[0];
             
-            if (daysDiff === streak) {
+            if (entry.date === expectedDateStr) {
                 streak++;
-                currentDate.setDate(currentDate.getDate() - 1);
-            } else if (daysDiff === streak + 1 && streak === 0) {
-                // Allow for today not having an entry yet
-                streak++;
-                currentDate = new Date(entryDate);
-                currentDate.setDate(currentDate.getDate() - 1);
-            } else {
+                // Move to previous day for next iteration
+                expectedDate.setDate(expectedDate.getDate() - 1);
+            } else if (entry.date < expectedDateStr) {
+                // Entry is older than expected, streak is broken
                 break;
             }
+            // If entry.date > expectedDateStr, continue looking for the expected date
         }
 
         return streak;
@@ -169,6 +183,54 @@ class Calculator {
             currency: this.currency,
             symbol: this.currencySymbol
         };
+    }
+
+    /**
+     * Debug work streak calculation (for testing)
+     * @param {Array} entries - Array of entry objects
+     * @returns {Object} Debug information about streak calculation
+     */
+    debugWorkStreak(entries) {
+        if (!entries || entries.length === 0) {
+            return { streak: 0, debug: 'No entries found' };
+        }
+
+        const sortedEntries = entries
+            .slice()
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        const today = new Date().toISOString().split('T')[0];
+        const hasToday = sortedEntries.some(entry => entry.date === today);
+        
+        let expectedDate = new Date();
+        expectedDate.setHours(0, 0, 0, 0);
+        
+        if (!hasToday) {
+            expectedDate.setDate(expectedDate.getDate() - 1);
+        }
+
+        const debug = [];
+        let streak = 0;
+
+        debug.push(`Today: ${today}, Has today's entry: ${hasToday}`);
+        debug.push(`Starting check from: ${expectedDate.toISOString().split('T')[0]}`);
+
+        for (const entry of sortedEntries) {
+            const expectedDateStr = expectedDate.toISOString().split('T')[0];
+            
+            if (entry.date === expectedDateStr) {
+                streak++;
+                debug.push(`✓ Found entry for ${entry.date}, streak: ${streak}`);
+                expectedDate.setDate(expectedDate.getDate() - 1);
+            } else if (entry.date < expectedDateStr) {
+                debug.push(`✗ Entry ${entry.date} is older than expected ${expectedDateStr}, streak broken`);
+                break;
+            } else {
+                debug.push(`⚠ Entry ${entry.date} is newer than expected ${expectedDateStr}, skipping`);
+            }
+        }
+
+        return { streak, debug: debug.join('\n') };
     }
 
     /**
