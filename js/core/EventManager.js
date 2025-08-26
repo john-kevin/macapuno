@@ -77,6 +77,33 @@ class EventManager {
         updateBtn.addEventListener('click', () => {
             this.app.entryManager.updateEntry();
         });
+
+        // Delete modal interactions
+        const deleteModal = document.getElementById('deleteModal');
+        const closeDeleteModal = document.getElementById('closeDeleteModal');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+        // Close delete modal events
+        closeDeleteModal.addEventListener('click', () => {
+            this.app.modalManager.closeDeleteModal();
+        });
+        
+        cancelDeleteBtn.addEventListener('click', () => {
+            this.app.modalManager.closeDeleteModal();
+        });
+
+        // Close delete modal when clicking outside
+        deleteModal.addEventListener('click', (e) => {
+            if (e.target === deleteModal) {
+                this.app.modalManager.closeDeleteModal();
+            }
+        });
+
+        // Confirm delete entry
+        confirmDeleteBtn.addEventListener('click', () => {
+            this.app.entryManager.confirmDeleteEntry();
+        });
     }
 
     /**
@@ -108,13 +135,15 @@ class EventManager {
         const wrapperCountInput = document.getElementById('wrapperCount');
 
         document.addEventListener('keydown', (e) => {
-            // Escape to close modal
+            // Escape to close modals
             if (e.key === 'Escape') {
                 this.app.modalManager.closeEditModal();
+                this.app.modalManager.closeDeleteModal();
             }
             
             // Enter to save (when not in modal)
-            if (e.key === 'Enter' && !editModal.classList.contains('show')) {
+            const deleteModal = document.getElementById('deleteModal');
+            if (e.key === 'Enter' && !editModal.classList.contains('show') && !deleteModal.classList.contains('show')) {
                 if (e.target === wrapperCountInput) {
                     this.app.entryManager.saveEntry();
                 }

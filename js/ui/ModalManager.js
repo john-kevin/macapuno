@@ -92,6 +92,66 @@ class ModalManager {
     getCurrentEditingEntry() {
         return this.currentEditingEntry;
     }
+
+    /**
+     * Open delete confirmation modal
+     * @param {string} date - Date of entry to delete
+     */
+    openDeleteModal(date) {
+        const entry = this.app.storage.getEntryByDate(date);
+        if (!entry) {
+            this.app.displayManager.showNotification('Entry not found.', 'error');
+            return;
+        }
+
+        this.currentEditingEntry = entry; // Reuse for delete operations
+        
+        // Format and display the entry details
+        const entryDate = new Date(entry.date);
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        };
+        const formattedDate = entryDate.toLocaleDateString('en-US', options);
+        
+        // Populate delete entry info
+        const deleteEntryInfo = document.getElementById('deleteEntryInfo');
+        deleteEntryInfo.innerHTML = `
+            <div class="delete-entry-date">${formattedDate}</div>
+            <div class="delete-entry-details">${entry.wrapperCount} wrappers</div>
+            <div class="delete-entry-earnings">${this.app.calculator.formatEarnings(entry.earnings)}</div>
+        `;
+        
+        // Show modal with proper animation
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'flex';
+        modal.classList.remove('closing');
+        
+        // Force reflow then add show class for animation
+        modal.offsetHeight;
+        modal.classList.add('show');
+    }
+
+    /**
+     * Close delete confirmation modal
+     */
+    closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        
+        // Add closing class for reverse animation
+        modal.classList.remove('show');
+        modal.classList.add('closing');
+        
+        // Hide modal after animation completes
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.classList.remove('closing');
+        }, 300);
+        
+        this.currentEditingEntry = null;
+    }
 }
 
 // Export for module use

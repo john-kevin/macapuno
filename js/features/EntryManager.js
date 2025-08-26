@@ -82,28 +82,36 @@ class EntryManager {
     }
 
     /**
-     * Delete an entry with confirmation
+     * Delete an entry with confirmation modal
      * @param {string} date - Date of entry to delete
      */
     deleteEntry(date) {
         const entry = this.app.storage.getEntryByDate(date);
         if (!entry) return;
 
-        const confirmMessage = `Delete entry for ${new Date(date).toLocaleDateString()}?\n${entry.wrapperCount} wrappers - ${this.app.calculator.formatEarnings(entry.earnings)}`;
-        
-        if (confirm(confirmMessage)) {
-            if (this.app.storage.deleteEntry(date)) {
-                this.app.displayManager.showNotification('Entry deleted successfully', 'success');
-                this.app.displayManager.loadAndDisplayData();
-                
-                // Update main form if it's showing the same date
-                const currentDate = document.getElementById('entryDate').value;
-                if (currentDate === date) {
-                    this.app.formManager.handleDateChange();
-                }
-            } else {
-                this.app.displayManager.showNotification('Failed to delete entry. Please try again.', 'error');
+        // Open delete confirmation modal instead of simple confirm
+        this.app.modalManager.openDeleteModal(date);
+    }
+
+    /**
+     * Confirm and execute entry deletion
+     */
+    confirmDeleteEntry() {
+        const currentEditingEntry = this.app.modalManager.getCurrentEditingEntry();
+        if (!currentEditingEntry) return;
+
+        if (this.app.storage.deleteEntry(currentEditingEntry.date)) {
+            this.app.displayManager.showNotification('Entry deleted successfully', 'success');
+            this.app.modalManager.closeDeleteModal();
+            this.app.displayManager.loadAndDisplayData();
+            
+            // Update main form if it's showing the same date
+            const currentDate = document.getElementById('entryDate').value;
+            if (currentDate === currentEditingEntry.date) {
+                this.app.formManager.handleDateChange();
             }
+        } else {
+            this.app.displayManager.showNotification('Failed to delete entry. Please try again.', 'error');
         }
     }
 
