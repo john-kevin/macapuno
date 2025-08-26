@@ -48,7 +48,7 @@ class EntryManager {
         );
 
         if (!this.app.calculator.isValidWrapperCount(newWrapperCount)) {
-            this.app.displayManager.showNotification('Please enter a valid wrapper count', 'error');
+            this.app.displayManager.showNotification('Please enter a valid number', 'error');
             return;
         }
 

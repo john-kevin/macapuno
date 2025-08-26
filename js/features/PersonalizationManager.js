@@ -115,7 +115,7 @@ class PersonalizationManager {
         let message;
         if (this.app.storage.getAllEntries().length === 0) {
             // First time - encourage to start
-            message = `Hi ${this.userName}! Ready to track your wrappers?`;
+            message = `Hi ${this.userName}! Ready to start tracking?`;
         } else {
             // Returning user - welcome back
             message = greetingMessages[Math.floor(Math.random() * greetingMessages.length)];

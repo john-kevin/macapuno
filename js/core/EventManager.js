@@ -120,6 +120,67 @@ class EventManager {
                 this.app.personalizationManager.saveUserName();
             }
         });
+
+        // Summary items click animations
+        this.setupSummaryItemAnimations();
+    }
+
+    /**
+     * Setup smooth animations for summary items
+     */
+    setupSummaryItemAnimations() {
+        const summaryItems = document.querySelectorAll('.summary-item');
+        
+        summaryItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                const isCurrentlyActive = item.classList.contains('active');
+                
+                if (isCurrentlyActive) {
+                    // Deactivate - remove active state
+                    item.classList.remove('active');
+                    item.classList.add('clicked');
+                    
+                    // Remove clicked class after animation
+                    setTimeout(() => {
+                        item.classList.remove('clicked');
+                    }, 600);
+                } else {
+                    // Activate - remove active from all other items first
+                    summaryItems.forEach(otherItem => {
+                        otherItem.classList.remove('active', 'clicked');
+                    });
+                    
+                    // Add clicked animation then active state
+                    item.classList.add('clicked');
+                    
+                    // Add active state after animation
+                    setTimeout(() => {
+                        item.classList.remove('clicked');
+                        item.classList.add('active');
+                    }, 600);
+                }
+                
+                // Add subtle haptic feedback for mobile
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+            });
+            
+            // Add smooth focus for keyboard accessibility
+            item.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    item.click();
+                }
+            });
+            
+            // Make focusable for keyboard navigation
+            if (!item.hasAttribute('tabindex')) {
+                item.setAttribute('tabindex', '0');
+            }
+        });
     }
 
     /**
