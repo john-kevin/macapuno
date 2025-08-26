@@ -8,6 +8,7 @@ class MacapunoApp {
         this.calculator = new Calculator();
         this.storage = new StorageManager();
         this.currentEditingEntry = null;
+        this.currentViewMonth = new Date(); // Track current month being viewed
         
         // Initialize the app
         this.init();
@@ -84,6 +85,23 @@ class MacapunoApp {
         // Update entry
         updateBtn.addEventListener('click', () => {
             this.updateEntry();
+        });
+
+        // Month navigation
+        const prevMonthBtn = document.getElementById('prevMonthBtn');
+        const nextMonthBtn = document.getElementById('nextMonthBtn');
+        const monthYear = document.getElementById('monthYear');
+
+        prevMonthBtn.addEventListener('click', () => {
+            this.navigateMonth(-1);
+        });
+
+        nextMonthBtn.addEventListener('click', () => {
+            this.navigateMonth(1);
+        });
+
+        monthYear.addEventListener('click', () => {
+            this.showMonthPicker();
         });
 
         // Keyboard shortcuts
@@ -227,52 +245,239 @@ class MacapunoApp {
      */
     loadAndDisplayData() {
         this.updateSummaryData();
+        this.updateMonthNavigation();
         this.displayHistoryEntries();
     }
 
     /**
-     * Update summary statistics
+     * Navigate to different month
+     * @param {number} direction - -1 for previous month, 1 for next month
+     */
+    navigateMonth(direction) {
+        const newMonth = new Date(this.currentViewMonth);
+        newMonth.setMonth(newMonth.getMonth() + direction);
+        
+        this.currentViewMonth = newMonth;
+        this.updateMonthNavigation();
+        this.displayHistoryEntries();
+    }
+
+    /**
+     * Update month navigation display
+     */
+    updateMonthNavigation() {
+        const monthYear = document.getElementById('monthYear');
+        const entryCount = document.getElementById('entryCount');
+        const prevBtn = document.getElementById('prevMonthBtn');
+        const nextBtn = document.getElementById('nextMonthBtn');
+
+        // Format month and year
+        const monthNames = [
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        ];
+        
+        const month = monthNames[this.currentViewMonth.getMonth()];
+        const year = this.currentViewMonth.getFullYear();
+        monthYear.textContent = `${month} ${year}`;
+
+        // Count entries for this month
+        const monthEntries = this.getEntriesForMonth(this.currentViewMonth);
+        const count = monthEntries.length;
+        entryCount.textContent = `(${count} ${count === 1 ? 'entry' : 'entries'})`;
+
+        // Enable/disable navigation buttons
+        const today = new Date();
+        const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const viewMonth = new Date(this.currentViewMonth.getFullYear(), this.currentViewMonth.getMonth(), 1);
+        
+        // Disable next button if viewing current month or future
+        nextBtn.disabled = viewMonth >= currentMonth;
+
+        // Get earliest entry date to limit backward navigation
+        const allEntries = this.storage.getAllEntries();
+        if (allEntries.length > 0) {
+            const earliestEntry = allEntries.reduce((earliest, entry) => 
+                entry.date < earliest.date ? entry : earliest
+            );
+            const earliestMonth = new Date(earliestEntry.date);
+            const earliestMonthStart = new Date(earliestMonth.getFullYear(), earliestMonth.getMonth(), 1);
+            
+            prevBtn.disabled = viewMonth <= earliestMonthStart;
+        } else {
+            prevBtn.disabled = true;
+        }
+    }
+
+    /**
+     * Get entries for a specific month
+     * @param {Date} date - Date in the target month
+     * @returns {Array} Entries for that month
+     */
+    getEntriesForMonth(date) {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        
+        const startOfMonth = new Date(year, month, 1);
+        const endOfMonth = new Date(year, month + 1, 0);
+        
+        const startDateStr = startOfMonth.toISOString().split('T')[0];
+        const endDateStr = endOfMonth.toISOString().split('T')[0];
+        
+        return this.storage.getAllEntries().filter(entry => 
+            entry.date >= startDateStr && entry.date <= endDateStr
+        );
+    }
+
+    /**
+     * Show month picker (simple version - can be enhanced later)
+     */
+    showMonthPicker() {
+        const allEntries = this.storage.getAllEntries();
+        if (allEntries.length === 0) {
+            this.showNotification('No entries available', 'info');
+            return;
+        }
+
+        // For now, just cycle through available months
+        const availableMonths = this.getAvailableMonths();
+        if (availableMonths.length <= 1) {
+            this.showNotification('Only one month available', 'info');
+            return;
+        }
+
+        // Find current position and move to next available month
+        const currentMonthKey = `${this.currentViewMonth.getFullYear()}-${this.currentViewMonth.getMonth()}`;
+        let currentIndex = availableMonths.findIndex(month => 
+            `${month.getFullYear()}-${month.getMonth()}` === currentMonthKey
+        );
+        
+        const nextIndex = (currentIndex + 1) % availableMonths.length;
+        this.currentViewMonth = availableMonths[nextIndex];
+        
+        this.updateMonthNavigation();
+        this.displayHistoryEntries();
+    }
+
+    /**
+     * Get list of months that have entries
+     * @returns {Array} Array of Date objects representing months with entries
+     */
+    getAvailableMonths() {
+        const allEntries = this.storage.getAllEntries();
+        const monthsSet = new Set();
+        
+        allEntries.forEach(entry => {
+            const date = new Date(entry.date);
+            const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+            monthsSet.add(monthKey);
+        });
+        
+        return Array.from(monthsSet)
+            .map(monthKey => {
+                const [year, month] = monthKey.split('-').map(Number);
+                return new Date(year, month, 1);
+            })
+            .sort((a, b) => b - a); // Newest first
+    }
+
+    /**
+     * Update summary statistics based on currently viewed month
      */
     updateSummaryData() {
         const entries = this.storage.getAllEntries();
         
-        // Total earnings
+        // Total earnings (all time)
         const totalEarnings = this.calculator.calculateTotalEarnings(entries);
         document.getElementById('totalEarnings').textContent = this.calculator.formatEarnings(totalEarnings);
 
-        // Weekly earnings
-        const weeklyEarnings = this.calculator.calculateWeeklyEarnings(entries);
+        // Use the currently viewed month as reference for week/month calculations
+        const referenceDate = new Date(this.currentViewMonth);
+        const today = new Date();
+        
+        // Update labels based on context
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const isCurrentMonth = referenceDate.getMonth() === today.getMonth() && 
+                              referenceDate.getFullYear() === today.getFullYear();
+        
+        // Update month label
+        const monthLabel = document.getElementById('monthLabel');
+        if (isCurrentMonth) {
+            monthLabel.textContent = 'This Month';
+        } else {
+            monthLabel.textContent = `${monthNames[referenceDate.getMonth()]} ${referenceDate.getFullYear()}`;
+        }
+
+        // Update week label
+        const weekLabel = document.getElementById('weekLabel');
+        const weekStart = new Date(referenceDate);
+        weekStart.setDate(referenceDate.getDate() - referenceDate.getDay()); // Start of week
+        
+        const isCurrentWeek = weekStart <= today && today <= new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
+        
+        if (isCurrentWeek) {
+            weekLabel.textContent = 'This Week';
+        } else {
+            const weekMonth = monthNames[weekStart.getMonth()];
+            const weekDay = weekStart.getDate();
+            weekLabel.textContent = `Week of ${weekMonth} ${weekDay}`;
+        }
+        
+        // Weekly earnings (for the week containing the viewed month's first day)
+        const weeklyEarnings = this.calculator.calculateWeeklyEarnings(entries, referenceDate);
         document.getElementById('weeklyEarnings').textContent = this.calculator.formatEarnings(weeklyEarnings);
 
-        // Monthly earnings
-        const monthlyEarnings = this.calculator.calculateMonthlyEarnings(entries);
+        // Monthly earnings (for the currently viewed month)
+        const monthlyEarnings = this.calculator.calculateMonthlyEarnings(entries, referenceDate);
         document.getElementById('monthlyEarnings').textContent = this.calculator.formatEarnings(monthlyEarnings);
 
-        // Daily average
-        const dailyAverage = this.calculator.calculateDailyAverage(entries);
+        // Daily average (only for the currently viewed month)
+        const monthEntries = this.getEntriesForMonth(this.currentViewMonth);
+        const dailyAverage = this.calculator.calculateDailyAverage(monthEntries);
         document.getElementById('dailyAverage').textContent = dailyAverage.toString();
 
-        // Work streak
+        // Work streak (global calculation - all entries)
         const workStreak = this.calculator.calculateWorkStreak(entries);
         document.getElementById('workStreak').textContent = `${workStreak} days`;
     }
 
     /**
-     * Display history entries
+     * Display history entries for current month
      */
     displayHistoryEntries() {
         const historyList = document.getElementById('historyList');
-        const entries = this.storage.getSortedEntries(); // Newest first
+        const monthEntries = this.getEntriesForMonth(this.currentViewMonth);
+        
+        // Sort entries newest first within the month
+        const sortedEntries = monthEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        if (entries.length === 0) {
-            historyList.innerHTML = '<div class="no-entries">No entries yet. Start tracking your work!</div>';
+        if (sortedEntries.length === 0) {
+            const monthNames = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            const monthName = monthNames[this.currentViewMonth.getMonth()];
+            historyList.innerHTML = `<div class="no-entries">No entries for ${monthName} ${this.currentViewMonth.getFullYear()}.</div>`;
             return;
         }
 
-        historyList.innerHTML = entries.map(entry => this.createHistoryItemHTML(entry)).join('');
+        // Add transition effect
+        historyList.classList.add('month-transition');
         
-        // Add event listeners to action buttons
-        this.attachHistoryEventListeners();
+        setTimeout(() => {
+            historyList.innerHTML = sortedEntries.map(entry => this.createHistoryItemHTML(entry)).join('');
+            
+            // Add event listeners to action buttons
+            this.attachHistoryEventListeners();
+            
+            // Show with transition
+            historyList.classList.add('show');
+        }, 150);
+
+        setTimeout(() => {
+            historyList.classList.remove('month-transition', 'show');
+        }, 300);
     }
 
     /**

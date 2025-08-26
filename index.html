@@ -45,11 +45,11 @@
         <section class="summary-section">
             <div class="summary-grid">
                 <div class="summary-item">
-                    <div class="summary-label">This Week</div>
+                    <div class="summary-label" id="weekLabel">This Week</div>
                     <div class="summary-value" id="weeklyEarnings">₱0.00</div>
                 </div>
                 <div class="summary-item">
-                    <div class="summary-label">This Month</div>
+                    <div class="summary-label" id="monthLabel">This Month</div>
                     <div class="summary-value" id="monthlyEarnings">₱0.00</div>
                 </div>
                 <div class="summary-item">
@@ -65,9 +65,19 @@
 
         <!-- History Section -->
         <section class="history-section">
-            <h2 class="section-title">Recent Entries</h2>
+            <div class="history-header">
+                <h2 class="section-title">Entries</h2>
+                <div class="month-navigation">
+                    <button class="month-nav-btn" id="prevMonthBtn">‹</button>
+                    <div class="current-month" id="currentMonth">
+                        <span class="month-year" id="monthYear">Aug 2024</span>
+                        <span class="entry-count" id="entryCount">(0 entries)</span>
+                    </div>
+                    <button class="month-nav-btn" id="nextMonthBtn">›</button>
+                </div>
+            </div>
             <div class="history-list" id="historyList">
-                <div class="no-entries">No entries yet. Start tracking your work!</div>
+                <div class="no-entries">No entries for this month.</div>
             </div>
         </section>
     </div>

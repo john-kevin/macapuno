@@ -8,7 +8,7 @@ class Calculator {
         this.ratePerWrapper = 0.20; // 500 wrappers = 100 pesos
         this.currency = 'PHP';
         this.currencySymbol = '₱';
-        this.version = '1.2.1'; // App version - Fixed work streak calculation bug
+        this.version = '1.3.1'; // App version - Fixed context-aware week/month calculations
     }
 
     /**
@@ -110,21 +110,63 @@ class Calculator {
     }
 
     /**
-     * Calculate weekly earnings (last 7 days)
+     * Calculate weekly earnings for a specific week containing the given date
      * @param {Array} entries - Array of entry objects
-     * @returns {number} Total earnings for the week
+     * @param {Date} referenceDate - Date to determine which week to calculate
+     * @returns {number} Total earnings for that week
      */
-    calculateWeeklyEarnings(entries) {
-        return this.calculateEarningsForPeriod(entries, 7);
+    calculateWeeklyEarnings(entries, referenceDate = new Date()) {
+        if (!entries || entries.length === 0) {
+            return 0;
+        }
+
+        // Get start and end of the week containing the reference date
+        const date = new Date(referenceDate);
+        const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
+        
+        // Calculate start of week (Sunday)
+        const startOfWeek = new Date(date);
+        startOfWeek.setDate(date.getDate() - dayOfWeek);
+        startOfWeek.setHours(0, 0, 0, 0);
+        
+        // Calculate end of week (Saturday)
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        endOfWeek.setHours(23, 59, 59, 999);
+
+        const startDateStr = startOfWeek.toISOString().split('T')[0];
+        const endDateStr = endOfWeek.toISOString().split('T')[0];
+
+        return entries
+            .filter(entry => entry.date >= startDateStr && entry.date <= endDateStr)
+            .reduce((total, entry) => total + (entry.earnings || 0), 0);
     }
 
     /**
-     * Calculate monthly earnings (last 30 days)
+     * Calculate monthly earnings for a specific month
      * @param {Array} entries - Array of entry objects
-     * @returns {number} Total earnings for the month
+     * @param {Date} referenceDate - Date to determine which month to calculate
+     * @returns {number} Total earnings for that month
      */
-    calculateMonthlyEarnings(entries) {
-        return this.calculateEarningsForPeriod(entries, 30);
+    calculateMonthlyEarnings(entries, referenceDate = new Date()) {
+        if (!entries || entries.length === 0) {
+            return 0;
+        }
+
+        const date = new Date(referenceDate);
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        
+        // Get start and end of the month
+        const startOfMonth = new Date(year, month, 1);
+        const endOfMonth = new Date(year, month + 1, 0); // Last day of month
+        
+        const startDateStr = startOfMonth.toISOString().split('T')[0];
+        const endDateStr = endOfMonth.toISOString().split('T')[0];
+
+        return entries
+            .filter(entry => entry.date >= startDateStr && entry.date <= endDateStr)
+            .reduce((total, entry) => total + (entry.earnings || 0), 0);
     }
 
     /**
