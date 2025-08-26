@@ -233,8 +233,11 @@ class MacapunoApp {
             this.showNotification('Entry saved successfully!', 'success');
             this.loadAndDisplayData();
             
-            // Optional: Clear form after successful save
-            // this.clearForm();
+            // Clear the wrapper count input for next entry
+            wrapperCountInput.value = '';
+            this.updateCurrentEarnings(0);
+            
+            // Keep the same date for convenience (user might want to add more entries for same date)
         } else {
             this.showNotification('Failed to save entry. Please try again.', 'error');
         }
@@ -286,27 +289,36 @@ class MacapunoApp {
         const count = monthEntries.length;
         entryCount.textContent = `(${count} ${count === 1 ? 'entry' : 'entries'})`;
 
-        // Enable/disable navigation buttons
-        const today = new Date();
-        const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const viewMonth = new Date(this.currentViewMonth.getFullYear(), this.currentViewMonth.getMonth(), 1);
+        // Get all available months with entries
+        const availableMonths = this.getAvailableMonths();
         
-        // Disable next button if viewing current month or future
-        nextBtn.disabled = viewMonth >= currentMonth;
-
-        // Get earliest entry date to limit backward navigation
-        const allEntries = this.storage.getAllEntries();
-        if (allEntries.length > 0) {
-            const earliestEntry = allEntries.reduce((earliest, entry) => 
-                entry.date < earliest.date ? entry : earliest
-            );
-            const earliestMonth = new Date(earliestEntry.date);
-            const earliestMonthStart = new Date(earliestMonth.getFullYear(), earliestMonth.getMonth(), 1);
-            
-            prevBtn.disabled = viewMonth <= earliestMonthStart;
-        } else {
+        if (availableMonths.length === 0) {
+            // No entries at all
             prevBtn.disabled = true;
+            nextBtn.disabled = true;
+            return;
         }
+
+        // Sort available months (newest first)
+        availableMonths.sort((a, b) => b - a);
+        
+        const currentMonthKey = `${this.currentViewMonth.getFullYear()}-${this.currentViewMonth.getMonth()}`;
+        const currentIndex = availableMonths.findIndex(month => 
+            `${month.getFullYear()}-${month.getMonth()}` === currentMonthKey
+        );
+
+        // Enable/disable buttons based on position in available months
+        prevBtn.disabled = currentIndex >= availableMonths.length - 1; // Can't go further back
+        nextBtn.disabled = currentIndex <= 0; // Can't go further forward
+
+        console.log('Debug navigation:', {
+            currentMonth: `${month} ${year}`,
+            currentIndex,
+            totalAvailable: availableMonths.length,
+            prevDisabled: prevBtn.disabled,
+            nextDisabled: nextBtn.disabled,
+            availableMonths: availableMonths.map(m => `${monthNames[m.getMonth()]} ${m.getFullYear()}`)
+        });
     }
 
     /**
@@ -378,7 +390,7 @@ class MacapunoApp {
                 const [year, month] = monthKey.split('-').map(Number);
                 return new Date(year, month, 1);
             })
-            .sort((a, b) => b - a); // Newest first
+            .sort((a, b) => b - a); // Newest first for consistency
     }
 
     /**

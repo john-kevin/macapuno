@@ -8,7 +8,7 @@ class Calculator {
         this.ratePerWrapper = 0.20; // 500 wrappers = 100 pesos
         this.currency = 'PHP';
         this.currencySymbol = '₱';
-        this.version = '1.3.1'; // App version - Fixed context-aware week/month calculations
+        this.version = '1.3.3'; // App version - Clear wrapper count input after save
     }
 
     /**
