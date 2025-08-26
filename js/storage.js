@@ -385,6 +385,52 @@ class StorageManager {
             return 0;
         }
     }
+
+    /**
+     * Save user name
+     * @param {string} name - User's name
+     */
+    saveUserName(name) {
+        if (!this.isLocalStorageSupported) return false;
+        
+        try {
+            localStorage.setItem('macapuno-user-name', name.trim());
+            return true;
+        } catch (error) {
+            console.error('Failed to save user name:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Get user name
+     * @returns {string|null} User's name or null if not set
+     */
+    getUserName() {
+        if (!this.isLocalStorageSupported) return null;
+        
+        try {
+            return localStorage.getItem('macapuno-user-name');
+        } catch (error) {
+            console.error('Failed to get user name:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Remove user name
+     */
+    removeUserName() {
+        if (!this.isLocalStorageSupported) return false;
+        
+        try {
+            localStorage.removeItem('macapuno-user-name');
+            return true;
+        } catch (error) {
+            console.error('Failed to remove user name:', error);
+            return false;
+        }
+    }
 }
 
 // Export for use in other modules

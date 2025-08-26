@@ -185,6 +185,113 @@
     transform: translateY(-1px);
 }
 
+/* Welcome Modal Styles - Simplified */
+.welcome-modal .modal-content {
+    border: none;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    border-radius: 20px;
+}
+
+.welcome-body {
+    padding: 3rem 2rem !important;
+    text-align: center;
+    background: white;
+    border-radius: 20px;
+}
+
+.welcome-emoji {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: wave 2s ease-in-out infinite;
+}
+
+@keyframes wave {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
+}
+
+.welcome-body h2 {
+    font-size: 1.8rem;
+    color: #495057;
+    margin: 0 0 2rem 0;
+    font-weight: 600;
+}
+
+.name-input {
+    width: 100%;
+    font-size: 1.5rem !important;
+    padding: 1rem 1.5rem !important;
+    text-align: center !important;
+    border: 3px solid #e9ecef !important;
+    border-radius: 15px !important;
+    margin-bottom: 2rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: none !important;
+}
+
+.name-input:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    outline: none;
+    transform: scale(1.02);
+}
+
+.get-started-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+.get-started-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+.get-started-btn:active {
+    transform: translateY(0);
+}
+
+/* Personal Greeting Styles */
+.personal-greeting {
+    text-align: center;
+    margin: 0.5rem 0;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+    border-radius: 20px;
+    border: 1px solid #c3e6cb;
+    display: inline-block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #155724;
+    animation: greeting-fade-in 0.5s ease-out;
+}
+
+@keyframes greeting-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.personal-greeting .greeting-emoji {
+    margin-right: 0.25rem;
+    font-size: 1rem;
+}
+
 .modal-header {
     display: flex;
     justify-content: space-between;

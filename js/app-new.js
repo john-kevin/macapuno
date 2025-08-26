@@ -30,6 +30,7 @@ class MacapunoApp {
         this.entryManager = new EntryManager(this);
         this.navigationManager = new NavigationManager(this);
         this.celebrationManager = new CelebrationManager(this);
+        this.personalizationManager = new PersonalizationManager(this);
         
         // Core Managers (must be last as it references other managers)
         this.eventManager = new EventManager(this);
@@ -48,6 +49,9 @@ class MacapunoApp {
         this.displayManager.updateVersionDisplay();
         this.displayManager.loadAndDisplayData();
         
+        // Initialize personalization (welcome modal or greeting)
+        this.personalizationManager.init();
+        
         // Check localStorage support and show warning if needed
         if (!this.storage.isLocalStorageSupported) {
             this.displayManager.showNotification(
@@ -61,7 +65,7 @@ class MacapunoApp {
         console.log('📦 Modular architecture loaded:', {
             core: ['Calculator', 'StorageManager', 'EventManager'],
             ui: ['FormManager', 'ModalManager', 'DisplayManager'],
-            features: ['EntryManager', 'NavigationManager', 'CelebrationManager']
+            features: ['EntryManager', 'NavigationManager', 'CelebrationManager', 'PersonalizationManager']
         });
     }
 

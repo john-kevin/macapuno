@@ -104,6 +104,22 @@ class EventManager {
         confirmDeleteBtn.addEventListener('click', () => {
             this.app.entryManager.confirmDeleteEntry();
         });
+
+        // Welcome modal interactions
+        const saveNameBtn = document.getElementById('saveNameBtn');
+        const userNameInput = document.getElementById('userName');
+
+        // Save user name
+        saveNameBtn.addEventListener('click', () => {
+            this.app.personalizationManager.saveUserName();
+        });
+
+        // Enter key to save name in welcome modal
+        userNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                this.app.personalizationManager.saveUserName();
+            }
+        });
     }
 
     /**

@@ -18,6 +18,10 @@
             <div class="total-earnings">
                 <span id="totalEarningsLabel">Total Earnings:</span> <span id="totalEarnings">₱0.00</span>
             </div>
+
+            <div class="personal-greeting" id="personalGreeting" style="display: none;">
+                <!-- Personalized greeting will be inserted here -->
+            </div>
         </header>
 
         <!-- Input Section -->
@@ -140,6 +144,18 @@
         </div>
     </div>
 
+    <!-- Welcome/Name Setup Modal -->
+    <div id="welcomeModal" class="modal welcome-modal">
+        <div class="modal-content">
+            <div class="modal-body welcome-body">
+                <div class="welcome-emoji">👋</div>
+                <h2>What's your name?</h2>
+                <input type="text" id="userName" class="name-input" placeholder="Type your name here..." maxlength="30">
+                <button class="get-started-btn" id="saveNameBtn">Let's Go!</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Core modules (loaded first) -->
     <script src="js/calculator.js"></script>
     <script src="js/storage.js"></script>
@@ -153,6 +169,7 @@
     <script src="js/features/EntryManager.js"></script>
     <script src="js/features/NavigationManager.js"></script>
     <script src="js/features/CelebrationManager.js"></script>
+    <script src="js/features/PersonalizationManager.js"></script>
     
     <!-- Core managers (depends on other modules) -->
     <script src="js/core/EventManager.js"></script>
